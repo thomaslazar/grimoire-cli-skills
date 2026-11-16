@@ -202,6 +202,8 @@ grimoire-cli books metadata-search  --id <anchor> --source-id <source> --query "
 grimoire-cli books metadata-fetch   --id <anchor> --source-id <source> --paste "<identity>"
 ```
 
+- `metadata-sources` answers `{sources: [{id, name, description, homepage, attribution, supports_paste}]}`:
+  list the ids with `.sources[] | {id, name}`; `--source-id` takes `id`.
 - The diff is under `.fields`: read `.fields[] | select(.field=="description") | .incoming` and
   ignore `current`. A field the record does not carry is absent from the diff, which is an answer.
 - Matching traps: a component (token sheet, errata) matches its parent product; an identical score
