@@ -4,7 +4,7 @@ Agent skills that drive [`grimoire-cli`](https://github.com/thomaslazar/grimoire
 
 ## Requirements
 
-- grimoire-cli 0.8.0 or newer and Grimoire 1.11.0 or newer.
+- [grimoire-cli](https://github.com/thomaslazar/grimoire-cli) 0.8.0 or newer ([releases](https://github.com/thomaslazar/grimoire-cli/releases); the `install-grimoire-cli` skill installs it for you) and [Grimoire](https://github.com/hunter-read/grimoire) 1.11.0 or newer.
 - An admin account on the server for anything that imports.
 - Helper tools (for example `ffmpeg`, `qpdf`, `pdfinfo`): the `setup` skill checks for them and offers to install the missing ones.
 
@@ -89,6 +89,11 @@ One semver version for the whole repo, in `.claude-plugin/plugin.json` only. Eve
 - A shipped OCR script for image-only scans (today: the server's OCR or an external handover).
 - An `enrich-metadata` skill: audit, source, review and apply metadata on books already shelved.
 - A `cleanup-rundirs` skill: find finished import run directories and offer to delete them.
+
+## Related
+
+- [grimoire-cli](https://github.com/thomaslazar/grimoire-cli): the command-line client these skills drive.
+- [Grimoire](https://github.com/hunter-read/grimoire): the self-hosted TTRPG library server.
 
 ## License
 
