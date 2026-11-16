@@ -5,8 +5,7 @@ CATS = ["Core", "Supplements", "Adventures", "Character Sheets", "Maps", "Handou
         "Homebrew", "Starter Sets", "Magazines"]
 
 
-ARMORY = ["Core", "Army Books", "Supplements", "Campaigns", "Mission Packs", "Unit References",
-          "Errata", "Starter Sets", "Painting Guides", "Lore", "Magazines"]
+ARMORY = ["Core", "Factions", "Rules Updates", "Missions", "Campaigns", "Supplements"]
 KEYS = ("category_folders", "book_variant_kinds", "map_variant_kinds", "token_variant_kinds", "filename_pattern",
         "refused_book_formats", "licence_placement", "entry_rule", "roots", "armory_category_folders")
 HEADINGS = ["Goal", "Layout", "Filenames", "Variants and the entry", "Tags", "Licence placement",

@@ -153,12 +153,11 @@ one; when a shelf mixes licences, put it on the rows. Use only the server's lice
 ## Armory
 
 - Wargame systems live under `armory/` with the same container model as `books/`: system folders
-  with category folders (`armory_category_folders` in `profile.json`: `Core`, `Army Books`,
-  `Supplements`, `Campaigns`, `Mission Packs`, `Unit References`, `Errata`, `Starter Sets`,
-  `Painting Guides`, `Lore`, `Magazines`). Container markers are written with
-  `files folder create --container-kind`.
+  with category folders (`armory_category_folders` in `profile.json`: `Core`, `Factions`,
+  `Rules Updates`, `Missions`, `Campaigns`, `Supplements`, the set `files folder scaffold` creates
+  under `armory/`). Container markers are written with `files folder create --container-kind`.
 - `Campaigns` is the category `campaign` under `armory/` and `adventure` under `books/`.
-- No faction layout is prescribed until a wargame skill exists.
+- Inside `Factions/`, no per-faction layout is prescribed until a wargame skill exists.
 - A book that belongs on a second system's shelf is linked with `books links add`, not copied.
 
 ## Metadata

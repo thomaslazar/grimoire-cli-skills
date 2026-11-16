@@ -44,7 +44,7 @@ assert_exit 0 python3 "$script" --plan "$t"
 mk "[$(row Core/A.pdf | sed -e "s|$t/a.pdf|$t/gone.pdf|" -e 's|"new"|"present"|')]"
 assert_exit 0 python3 "$script" --plan "$t"
 # armory roots use the armory categories
-mk "[$(row 'Army Books/A.pdf')]" "armory/Starfall Wars/1 EN"
+mk "[$(row 'Factions/A.pdf')]" "armory/Starfall Wars/1 EN"
 assert_exit 0 python3 "$script" --plan "$t"
-mk "[$(row 'Army Books/A.pdf')]"; refuses "category folder" "armory category on a books system"
+mk "[$(row 'Factions/A.pdf')]"; refuses "category folder" "armory category on a books system"
 report
