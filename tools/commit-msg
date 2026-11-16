@@ -1,0 +1,6 @@
+#!/bin/sh
+# Reject attribution trailers in commit messages.
+if grep -Eiq 'co-authored-by|generated (with|by)|noreply@anthropic\.com|🤖' "$1"; then
+  echo "commit-msg: attribution lines are not allowed" >&2
+  exit 1
+fi

@@ -1,0 +1,49 @@
+Description:
+  grimoire-cli — Grimoire TTRPG and wargame library CLI
+
+Usage:
+  grimoire-cli [command] [options]
+
+Options:
+  --debug         Enable debug-level logging (HTTP requests, token expiry, version check) to stderr.
+  --log-json      Emit stderr log lines as single-line JSON instead of text.
+  --pretty        Indent API response bodies. Off by default — responses are the server's bytes, unmodified. config get and --output receipts are always indented, regardless of this flag.
+  --help-full     Show full help including the request and response shapes.
+  -?, -h, --help  Show help and usage information
+  --version       Show version information
+
+Commands:
+  login            Authenticate with a Grimoire server
+  me               Show the authenticated account
+  config           Manage grimoire-cli configuration
+  systems          Game systems (the folders under books/ and armory/)
+  books            Read and edit book metadata
+  library          Scan and index the library
+  downloads        Bulk downloads
+  addons           Install and manage metadata add-ons
+  backups          Server backups of the database and user assets
+  sidecars         Configure and backfill metadata sidecar files beside each book
+  files            The library tree on disk
+  maps             Read and edit map metadata
+  models           Read and edit 3D model metadata
+  tokens           Read and edit token metadata
+  audio            Read and edit audio metadata
+  search           Search page text and metadata across the library
+  logs             Read the server's application log
+  tags             Tags across every resource type
+  duplicates       Find and resolve duplicate library items
+  campaigns        Campaigns and the library items linked into them
+  armies           Wargame army lists
+  leagues          Wargame leagues
+  pins             Your pinned folders and game systems
+  genres           The genre vocabulary
+  licenses         The license vocabulary
+  parent-systems   The parent-system vocabulary
+  system-families  The system-family vocabulary
+  dice-materials   The dice/material vocabulary
+  self-test        Verify the binary works (offline; no server needed)
+
+Environment variables:
+  GRIMOIRE_SERVER   Server URL, overriding the config file.
+  GRIMOIRE_DEBUG=1  Same as --debug. Enables debug-level logging to stderr.
+

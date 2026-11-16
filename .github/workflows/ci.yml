@@ -1,0 +1,27 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: python deps (Pillow for image scripts, pyyaml for the frontmatter test)
+        run: python3 -m pip install Pillow pyyaml
+      - name: tools tests
+        run: python3 -m unittest discover -s tools
+      - name: commit-msg hook test
+        run: sh tools/test_commit_msg.sh
+      - name: ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: skill tests
+        run: |
+          for t in skills/*/scripts/tests/run_all.sh; do
+            [ -e "$t" ] || continue
+            bash "$t"
+          done
+      - name: lib tests
+        run: |
+          [ -d lib ] || exit 0
+          python3 -m unittest discover -s lib
+      - name: leak check
+        run: python3 tools/leak_check.py .

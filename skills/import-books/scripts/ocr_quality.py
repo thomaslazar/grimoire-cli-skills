@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+"""OCR-quality scorer.
+
+usage: ocr_quality.py [--markers a,b,c] FOLDER [FOLDER ...]
+
+garble% = share of word tokens showing OCR damage: a digit inside a letter run, an underscore, an
+internal case flip (statLli) or a junk character. A digital-native PDF sits near 0.2%; 1.4% or more
+is a reasonable bar for re-OCR. Dice and stat codes (1d6, 2d20+3, AC15, DMG2d6) are not counted.
+frag% = share of one-letter tokens. --markers is a comma list of characters or strings that your
+language uses often (e.g. `é,è,à,ç`); the report then adds a markers-per-1000-letters column, which
+catches a wrong-language OCR model. Default: no markers, no column.
+Needs pdftotext (poppler); missing -> exit 2.
+"""
+import argparse, os, re, subprocess, sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "lib"))
+from grimoire_skills import shelf  # noqa: E402
+
+L = r"[^\W\d_]"
+TOK = re.compile(r"[^\s]{2,}")
+STAT = re.compile(r"^(?:\d*[dDwW]\d+(?:[+-]\d+)?|[A-Z]{1,3}[a-z]?\d{1,3}|[A-Z]{1,3}\d*[dDwW]\d+)$")
+
+
+def score(path, markers=()):
+    t = subprocess.run(["pdftotext", path, "-"], capture_output=True, text=True, errors="replace").stdout
+    words = [w for w in TOK.findall(t) if re.search(L, w)]
+    n = len(words) or 1
+    digit = sum(1 for w in words if re.search(L + r"\d|\d" + L, w) and not STAT.match(w))
+    under = sum("_" in w for w in words)
+    flip = sum(1 for w in words if re.search(r"[^\W\dA-Z_][A-Z]", w) and re.search(r"[a-z][A-Z]", w))
+    junk = sum(1 for w in words if re.search(r"[�|~^`<>{}\\]", w))
+    frag = sum(1 for w in words if len(re.sub(r"[\W\d_]", "", w)) == 1)
+    letters = max(sum(c.isalpha() for c in t), 1)
+    r = dict(words=n, garble=round((digit + under + flip + junk) / n * 100, 2), digit=round(digit / n * 100, 2),
+             underscore=round(under / n * 100, 2), caseflip=round(flip / n * 100, 2), junk=round(junk / n * 100, 2),
+             frag=round(frag / n * 100, 1))
+    if markers:
+        r["per1k"] = round(sum(t.count(m) for m in markers) / letters * 1000, 1)
+    return r
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--markers", default="")
+    ap.add_argument("folders", nargs="+")
+    a = ap.parse_args()
+    shelf.need_tool("pdftotext", "brew install poppler / apt install poppler-utils")
+    mk = [m for m in a.markers.split(",") if m]
+    rows = []
+    for root in a.folders:
+        for dp, _, fs in os.walk(root):
+            for f in sorted(fs):
+                if f.lower().endswith(".pdf"):
+                    s = score(os.path.join(dp, f), mk)
+                    s["name"] = f[:-4]
+                    rows.append(s)
+    rows.sort(key=lambda r: -r["garble"])
+    print(f"{'file':44}{'garble%':>8}{'digit':>7}{'under':>7}{'case':>7}{'junk':>6}{'frag%':>7}" + (f"{'mk/1k':>7}" if mk else ""))
+    for r in rows:
+        print(f"{r['name'][:42]:44}{r['garble']:>8}{r['digit']:>7}{r['underscore']:>7}{r['caseflip']:>7}{r['junk']:>6}{r['frag']:>7}"
+              + (f"{r['per1k']:>7}" if mk else ""))

@@ -1,0 +1,12 @@
+{
+  "name": "grimoire-cli",
+  "description": "Agent skills for managing a Grimoire TTRPG library with grimoire-cli",
+  "owner": { "name": "Thomas Lazar" },
+  "plugins": [
+    {
+      "name": "grimoire-cli-skills",
+      "source": "./",
+      "description": "Agent skills for managing a Grimoire TTRPG library with grimoire-cli"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+#!/bin/bash
+# Run the leak check on staged files; LEAK_PATTERNS = optional private patterns file.
+git diff --cached --name-only --diff-filter=ACM -z | {
+  set --
+  while IFS= read -r -d '' f; do set -- "$@" "$f"; done
+  [ $# -eq 0 ] && exit 0
+  if [ -n "$LEAK_PATTERNS" ]; then
+    exec python3 "$(dirname "$0")/leak_check.py" --patterns "$LEAK_PATTERNS" "$@"
+  fi
+  exec python3 "$(dirname "$0")/leak_check.py" "$@"
+}

@@ -1,0 +1,68 @@
+{
+  "category_folders": [
+    "Core",
+    "Supplements",
+    "Adventures",
+    "Character Sheets",
+    "Maps",
+    "Handouts",
+    "Homebrew",
+    "Starter Sets",
+    "Magazines"
+  ],
+  "book_variant_kinds": [
+    "version",
+    "printer-friendly",
+    "form-fillable",
+    "spreads",
+    "single-page",
+    "black-and-white",
+    "other"
+  ],
+  "map_variant_kinds": [
+    "gridded",
+    "gridless",
+    "black-and-white",
+    "printer-friendly",
+    "universal-vtt",
+    "version",
+    "other"
+  ],
+  "token_variant_kinds": [
+    "black-and-white",
+    "color-variation",
+    "version",
+    "other"
+  ],
+  "filename_pattern": "<code> - <title> - <qualifier> [<year>]",
+  "refused_book_formats": [
+    ".xlsx",
+    ".mobi",
+    ".azw3",
+    ".doc",
+    ".tif"
+  ],
+  "licence_placement": "system-when-uniform",
+  "entry_rule": "lighter-build",
+  "roots": {
+    "books": "books",
+    "armory": "armory",
+    "maps": "maps",
+    "tokens": "tokens",
+    "models": "models",
+    "audio": "audio"
+  },
+  "armory_category_folders": [
+    "Core",
+    "Army Books",
+    "Supplements",
+    "Campaigns",
+    "Mission Packs",
+    "Unit References",
+    "Errata",
+    "Starter Sets",
+    "Painting Guides",
+    "Lore",
+    "Magazines"
+  ]
+}
