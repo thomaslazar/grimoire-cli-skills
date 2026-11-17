@@ -372,7 +372,9 @@ watermark) do not count as text.
   python3 scripts/check_plan.py --plan <run>
   ```
   `resolve_ocr.py` rewrites each matching row's `source` to the output, reports handover rows no
-  plan row uses, and exits 1 if a listed output is missing. **Every plan of every run in a batch
+  plan row uses, and exits 1 if a listed output is missing. **Returned OCR is not a go-ahead**: the walkthrough's
+  "proceed" covered the handover, not the writes after it. Resolve and score the outputs (*OCR
+  quality*), report the result, and wait for an explicit go before phase 5. **Every plan of every run in a batch
   resolves through the handover**, not only the first. Before deleting the OCR work folder,
   check that every output is the source of an uploaded row or was left out with a reason.
 
@@ -413,7 +415,7 @@ something:
 
 Cheap decisions are summarised, not enumerated. Record the approvals in plan.json (`apply`, any
 `container_kind` change), then re-run `check_plan.py` and `check_shelf.sh`. With `ocr: handover`,
-hand the CSV over now and resolve it (phase 3) before phase 5.
+hand the block over now, resolve it (phase 3), and ask again before phase 5.
 
 ## Phase 5: structure
 
