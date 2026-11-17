@@ -4,7 +4,10 @@
 
 - **`import-books` OCR handover:** `ocr_handover.py` now also prints a paste-ready instruction
   block for the external OCR agent (files, rules, checks, what to report back), and the skill hands
-  over by printing that block in the console rather than writing a file.
+  over by printing that block in the console rather than writing a file. Above 25 files the block
+  gives totals and points at the CSV, so a corpus-wide pass stays pasteable.
+- **`import-books` after OCR:** returned OCR is resolved and scored, then the run asks again before
+  phase 5.
 
 ## 0.1.0 - 2026-11-16
 

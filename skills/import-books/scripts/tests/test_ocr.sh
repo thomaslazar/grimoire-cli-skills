@@ -57,6 +57,17 @@ assert_contains "$out" "$t/src/none.pdf  (" "block lists the absolute source"
 assert_contains "$out" "-> $t/plan/ocr/001-none.pdf" "block lists the full output path"
 assert_contains "$out" "OCR only pages 2" "block narrows a partial row to its empty pages"
 assert_contains "$out" "read-only" "block carries the rules"
+# a long list is summarised: the CSV carries the files
+cp "$t/plan/plan.json" "$t/plan.bak"
+python3 -c "
+import json; p=json.load(open('$t/plan/plan.json')); r=p['rows'][1]
+p['rows'] += [dict(r, target='Core/None%02d.pdf' % i) for i in range(30)]; json.dump(p, open('$t/plan/plan.json','w'))
+s=json.load(open('$t/plan/ocr-survey.json')); [s.__setitem__('Core/None%02d.pdf' % i, s['Core/None.pdf']) for i in range(30)]
+json.dump(s, open('$t/plan/ocr-survey.json','w'))"
+out="$(python3 "$S/ocr_handover.py" --plan "$t/plan" --out "$t/h3.csv")"
+assert_contains "$out" "image-only PDFs" "long list summarised"
+assert_contains "$out" "full list, with each output path, is in the CSV" "summary points at the CSV"
+mv "$t/plan.bak" "$t/plan/plan.json"
 
 # resolve_ocr: one output exists, one missing, one handover row unused
 mkdir -p "$t/plan/ocr"; : > "$t/plan/ocr/none.pdf"

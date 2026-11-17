@@ -17,6 +17,9 @@ import argparse, csv, json, os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..", "..", "lib"))
 from grimoire_skills import config, shelf  # noqa: E402
 
+LIST_MAX = 25  # above this, the block summarises and points at the CSV
+
+
 def prompt(csv_path, ocr_dir, items):
     files = []
     for k, (src, out, s, lang) in enumerate(items, 1):
@@ -24,6 +27,14 @@ def prompt(csv_path, ocr_dir, items):
                 "OCR only pages %s; keep the existing text layer on the others" % ",".join(map(str, s["empty_pages"])))
         size = os.path.getsize(src) / 1048576 if os.path.exists(src) else 0
         files.append(f"{k}. {src}  ({s.get('pages', '?')} pages, {size:.0f} MB, language: {lang}; {what})\n   -> {out}")
+    if len(files) > LIST_MAX:  # a corpus-wide pass: the CSV carries the list, the block the totals
+        none = [it for it in items if it[2]["text"] == "none"]
+        part = [it for it in items if it[2]["text"] != "none"]
+        langs = sorted({it[3] for it in items})
+        files = [f"{len(none)} image-only PDFs ({sum(it[2].get('pages', 0) for it in none)} pages): OCR every page.",
+                 f"{len(part)} PDFs with some empty pages ({sum(len(it[2]['empty_pages']) for it in part)} pages):"
+                 " OCR only the pages the CSV's reason column names; keep the existing text layer on the others.",
+                 f"Languages: {', '.join(langs)}. The full list, with each output path, is in the CSV."]
     return "\n".join([
         "----- OCR handover -----",
         f"OCR handover: {len(items)} PDF(s) need a searchable text layer.",
@@ -38,7 +49,7 @@ def prompt(csv_path, ocr_dir, items):
         "- Add an invisible text layer over the original page images only. Do not re-render, downsample,",
         "  recompress, deskew, rotate, crop or clean the images. Do not reorder, drop or merge pages. No Acrobat",
         "  ClearScan or any \"replace image with text\" mode.",
-        "- Write exactly the output paths above, keeping their file names. Leave no other files in the ocr/",
+        "- Write exactly the output paths given, keeping their file names. Leave no other files in the ocr/",
         "  folder except .log/.txt logs.",
         "- Do not upload anything anywhere. Do not touch any plan.json.",
         "",
