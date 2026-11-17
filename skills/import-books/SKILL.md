@@ -362,8 +362,11 @@ watermark) do not count as text.
   The CSV has `source_path,output_path,reason`, both paths absolute, the output a full file path
   under `<run>/ocr/` (prefixed with the row index, so equal names never collide). Draft it here so
   the walkthrough can show it, but **hand it over only after "proceed"**, and regenerate it if the
-  approved plan changed rows. Wait for the outputs, then point the plan at them and re-check before
-  phase 5:
+  approved plan changed rows. **Handing over means printing the block** the script writes between
+  `----- OCR handover -----` and `----- end OCR handover -----` in the console, unchanged, inside one
+  code block, so the user can paste it into their OCR agent. Never as a file. Add what the script
+  cannot know (what the pages hold) as a line inside the block. Wait for the outputs, then point the
+  plan at them and re-check before phase 5:
   ```bash
   python3 scripts/resolve_ocr.py --plan <run> --handover <run>/ocr-handover.csv
   python3 scripts/check_plan.py --plan <run>

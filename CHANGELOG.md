@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **`import-books` OCR handover:** `ocr_handover.py` now also prints a paste-ready instruction
+  block for the external OCR agent (files, rules, checks, what to report back), and the skill hands
+  over by printing that block in the console rather than writing a file.
+
 ## 0.1.0 - 2026-11-16
 
 First release.

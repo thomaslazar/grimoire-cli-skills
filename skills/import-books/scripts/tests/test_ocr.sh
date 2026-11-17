@@ -51,6 +51,12 @@ assert_eq "$(head -1 "$t/h.csv")" "source_path,output_path,reason" "csv header"
 assert_eq "$(wc -l < "$t/h.csv" | tr -d ' ')" "4" "none+partial+wm rows only"
 assert_contains "$(cat "$t/h.csv")" "$t/src/none.pdf,$t/plan/ocr/001-none.pdf," "absolute source and full output file path"
 assert_contains "$(cat "$t/h.csv")" "pages 2 have no text" "partial reason names pages"
+out="$(python3 "$S/ocr_handover.py" --plan "$t/plan" --out "$t/h.csv")"
+assert_contains "$out" "----- OCR handover -----" "prints a paste-ready handover block"
+assert_contains "$out" "$t/src/none.pdf  (" "block lists the absolute source"
+assert_contains "$out" "-> $t/plan/ocr/001-none.pdf" "block lists the full output path"
+assert_contains "$out" "OCR only pages 2" "block narrows a partial row to its empty pages"
+assert_contains "$out" "read-only" "block carries the rules"
 
 # resolve_ocr: one output exists, one missing, one handover row unused
 mkdir -p "$t/plan/ocr"; : > "$t/plan/ocr/none.pdf"
