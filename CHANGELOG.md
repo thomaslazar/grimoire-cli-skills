@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 - 2026-11-18
 
 - **`import-books` OCR handover:** `ocr_handover.py` writes the full instructions for the external
   OCR agent (files, rules, checks, what to report back) to a Markdown file beside the CSV and prints
