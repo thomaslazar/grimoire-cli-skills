@@ -7,10 +7,10 @@ Needs DIR/ocr-survey.json (ocr_survey.py) and `ocr: handover` in grimoire-skills
 Columns: source_path,output_path,reason. Both paths are absolute; output_path is the full file path
 the OCR tool should write (DIR/ocr/NNN-<file name>, NNN the plan row index, so equal names never collide). Exit 2 on a missing survey or the wrong ocr mode.
 
-After the count line it prints a paste-ready instruction block for the OCR agent (between the
-`----- OCR handover -----` markers): the files, the rules (source read-only, text layer only, exact
-output paths) and the checks to run before reporting back. Hand that block to the user; do not write
-it to a file.
+The full instructions for the OCR agent (the files, the rules: source read-only, text layer only,
+exact output paths; the checks to run; what to report back) go to a Markdown file beside the CSV
+(<out>.md). After the count line it prints a short paste-ready block (between the
+`----- OCR handover -----` markers) naming both files by absolute path. Hand that block to the user.
 """
 import argparse, csv, json, os, sys
 
@@ -20,7 +20,7 @@ from grimoire_skills import config, shelf  # noqa: E402
 LIST_MAX = 25  # above this, the block summarises and points at the CSV
 
 
-def prompt(csv_path, ocr_dir, items):
+def instructions(csv_path, ocr_dir, items):
     files = []
     for k, (src, out, s, lang) in enumerate(items, 1):
         what = ("image-only, OCR every page" if s["text"] == "none" else
@@ -36,8 +36,7 @@ def prompt(csv_path, ocr_dir, items):
                  " OCR only the pages the CSV's reason column names; keep the existing text layer on the others.",
                  f"Languages: {', '.join(langs)}. The full list, with each output path, is in the CSV."]
     return "\n".join([
-        "----- OCR handover -----",
-        f"OCR handover: {len(items)} PDF(s) need a searchable text layer.",
+        f"# OCR handover: {len(items)} PDF(s) need a searchable text layer",
         "",
         f"Handover CSV (columns source_path,output_path,reason; all paths absolute):\n{csv_path}",
         "",
@@ -49,6 +48,13 @@ def prompt(csv_path, ocr_dir, items):
         "- Add an invisible text layer over the original page images only. Do not re-render, downsample,",
         "  recompress, deskew, rotate, crop or clean the images. Do not reorder, drop or merge pages. No Acrobat",
         "  ClearScan or any \"replace image with text\" mode.",
+        "- Detect page orientation (ocrmypdf --rotate-pages, or Tesseract OSD per page). Pages printed sideways",
+        "  (tables, maps) are OCR'd in reading orientation, but every page keeps the display rotation (/Rotate)",
+        "  it has in the source.",
+        "- A file that already has a text layer of junk (an old scanner OCR) gets that layer replaced",
+        "  (ocrmypdf --redo-ocr), not skipped.",
+        "- If a page renders blank or garbled (e.g. 1-channel JPEGs tagged /DeviceRGB), OCR a working copy with",
+        "  the colour space corrected, then keep the source's image bytes and image dictionaries in the output.",
         "- Write exactly the output paths given, keeping their file names. Leave no other files in the ocr/",
         "  folder except .log/.txt logs.",
         "- Do not upload anything anywhere. Do not touch any plan.json.",
@@ -57,11 +63,22 @@ def prompt(csv_path, ocr_dir, items):
         "- pdfinfo: page count equals the source's.",
         "- pdftotext <output> - | wc -m: well above the source's count.",
         "- pdftotext on an early prose page (credits, contents, intro) reads as real words in the stated language.",
+        "- Per page: no page with plenty of text reads as mostly non-words (a sideways or garbled page).",
         "- Render page 1 of the source and of the output (pdftoppm -f 1 -l 1 -r 50 -png): they look identical.",
         "- File size is close to the source's. A much smaller file means the images were recompressed.",
         "",
         "Report back, per file: the output path, page count, character count, OCR tool and language model used,",
         "and any page that failed or came out empty. If you had to break a rule above, say which rule and why.",
+        "",
+    ])
+
+
+def block(md_path, csv_path, n):
+    return "\n".join([
+        "----- OCR handover -----",
+        f"OCR handover: {n} PDF(s) need a searchable text layer.",
+        f"Read and follow the instructions (files, rules, checks, report): {md_path}",
+        f"Files and output paths (CSV): {csv_path}",
         "----- end OCR handover -----",
     ])
 
@@ -99,4 +116,8 @@ if __name__ == "__main__":
             n += 1
     print(f"{n} rows -> {a.out}" + (f"; unreadable, left out: {errors}" if errors else ""))
     if items:
-        print(prompt(os.path.abspath(a.out), os.path.join(plandir, "ocr"), items))
+        csv_abs = os.path.abspath(a.out)
+        md = os.path.splitext(csv_abs)[0] + ".md"
+        with open(md, "w") as f:
+            f.write(instructions(csv_abs, os.path.join(plandir, "ocr"), items))
+        print(block(md, csv_abs, len(items)))

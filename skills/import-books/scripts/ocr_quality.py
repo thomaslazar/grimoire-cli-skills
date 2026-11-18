@@ -9,6 +9,11 @@ is a reasonable bar for re-OCR. Dice and stat codes (1d6, 2d20+3, AC15, DMG2d6) 
 frag% = share of one-letter tokens. --markers is a comma list of characters or strings that your
 language uses often (e.g. `é,è,à,ç`); the report then adds a markers-per-1000-letters column, which
 catches a wrong-language OCR model. Default: no markers, no column.
+--words FILE is a word list for the book's language (one word per line, e.g. /usr/share/dict/words for
+English). The report then adds a lowpg column: pages with 60+ words of four or more letters where under
+25% are in the list. Those are pages OCR'd sideways (rotated tables and maps) or from a garbled render,
+which garble% misses because the junk is made of letters. Read the listed pages before re-OCR: hex maps
+and name tables score low too.
 Needs pdftotext (poppler); missing -> exit 2.
 """
 import argparse, os, re, subprocess, sys
@@ -21,7 +26,16 @@ TOK = re.compile(r"[^\s]{2,}")
 STAT = re.compile(r"^(?:\d*[dDwW]\d+(?:[+-]\d+)?|[A-Z]{1,3}[a-z]?\d{1,3}|[A-Z]{1,3}\d*[dDwW]\d+)$")
 
 
-def score(path, markers=()):
+def low_pages(t, words):
+    bad = []
+    for i, pg in enumerate(t.split("\f"), 1):
+        ws = [w.lower() for w in re.findall(L + "{4,}", pg)]
+        if len(ws) >= 60 and sum(w in words or w.rstrip("s") in words for w in ws) / len(ws) < 0.25:
+            bad.append(i)
+    return bad
+
+
+def score(path, markers=(), wordlist=None):
     t = subprocess.run(["pdftotext", path, "-"], capture_output=True, text=True, errors="replace").stdout
     words = [w for w in TOK.findall(t) if re.search(L, w)]
     n = len(words) or 1
@@ -36,26 +50,31 @@ def score(path, markers=()):
              frag=round(frag / n * 100, 1))
     if markers:
         r["per1k"] = round(sum(t.count(m) for m in markers) / letters * 1000, 1)
+    if wordlist:
+        r["lowpg"] = low_pages(t, wordlist)
     return r
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--markers", default="")
+    ap.add_argument("--words", help="word list for the low-dictionary page check")
     ap.add_argument("folders", nargs="+")
     a = ap.parse_args()
     shelf.need_tool("pdftotext", "brew install poppler / apt install poppler-utils")
     mk = [m for m in a.markers.split(",") if m]
+    wl = {w.strip().lower() for w in open(a.words, encoding="utf-8", errors="replace")} if a.words else None
     rows = []
     for root in a.folders:
         for dp, _, fs in os.walk(root):
             for f in sorted(fs):
                 if f.lower().endswith(".pdf"):
-                    s = score(os.path.join(dp, f), mk)
+                    s = score(os.path.join(dp, f), mk, wl)
                     s["name"] = f[:-4]
                     rows.append(s)
     rows.sort(key=lambda r: -r["garble"])
-    print(f"{'file':44}{'garble%':>8}{'digit':>7}{'under':>7}{'case':>7}{'junk':>6}{'frag%':>7}" + (f"{'mk/1k':>7}" if mk else ""))
+    print(f"{'file':44}{'garble%':>8}{'digit':>7}{'under':>7}{'case':>7}{'junk':>6}{'frag%':>7}" + (f"{'mk/1k':>7}" if mk else "") + ("  lowpg" if wl else ""))
     for r in rows:
         print(f"{r['name'][:42]:44}{r['garble']:>8}{r['digit']:>7}{r['underscore']:>7}{r['caseflip']:>7}{r['junk']:>6}{r['frag']:>7}"
-              + (f"{r['per1k']:>7}" if mk else ""))
+              + (f"{r['per1k']:>7}" if mk else "")
+              + (f"  {len(r['lowpg'])} {r['lowpg'][:12]}" if wl and r["lowpg"] else ("  0" if wl else "")))

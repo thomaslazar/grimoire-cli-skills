@@ -2,12 +2,19 @@
 
 ## Unreleased
 
-- **`import-books` OCR handover:** `ocr_handover.py` now also prints a paste-ready instruction
-  block for the external OCR agent (files, rules, checks, what to report back), and the skill hands
-  over by printing that block in the console rather than writing a file. Above 25 files the block
-  gives totals and points at the CSV, so a corpus-wide pass stays pasteable.
+- **`import-books` OCR handover:** `ocr_handover.py` writes the full instructions for the external
+  OCR agent (files, rules, checks, what to report back) to a Markdown file beside the CSV and prints
+  a short paste-ready block naming both by absolute path; the skill hands over that block in the
+  console. Above 25 files the instructions give totals and point at the CSV.
 - **`import-books` after OCR:** returned OCR is resolved and scored, then the run asks again before
   phase 5.
+- **`import-books` OCR rules:** the handover asks for orientation detection (sideways pages OCR'd in
+  reading orientation, display rotation kept), `--redo-ocr` over a junk text layer, a corrected
+  working copy for images that render garbled, and a per-page non-word check.
+- **`ocr_quality.py --words <list>`:** a `lowpg` column lists pages that read as mostly non-words,
+  which `garble%` misses (sideways OCR, garbled renders).
+- **`import-books` gaps:** a missing description, author or year is a gap only after the row's first
+  and last pages were read and its cover rendered.
 
 ## 0.1.0 - 2026-11-16
 

@@ -53,10 +53,13 @@ assert_contains "$(cat "$t/h.csv")" "$t/src/none.pdf,$t/plan/ocr/001-none.pdf," 
 assert_contains "$(cat "$t/h.csv")" "pages 2 have no text" "partial reason names pages"
 out="$(python3 "$S/ocr_handover.py" --plan "$t/plan" --out "$t/h.csv")"
 assert_contains "$out" "----- OCR handover -----" "prints a paste-ready handover block"
-assert_contains "$out" "$t/src/none.pdf  (" "block lists the absolute source"
-assert_contains "$out" "-> $t/plan/ocr/001-none.pdf" "block lists the full output path"
-assert_contains "$out" "OCR only pages 2" "block narrows a partial row to its empty pages"
-assert_contains "$out" "read-only" "block carries the rules"
+assert_contains "$out" "$t/h.md" "block names the instructions file"
+assert_contains "$out" "$t/h.csv" "block names the csv"
+md="$(cat "$t/h.md")"
+assert_contains "$md" "$t/src/none.pdf  (" "instructions list the absolute source"
+assert_contains "$md" "-> $t/plan/ocr/001-none.pdf" "instructions list the full output path"
+assert_contains "$md" "OCR only pages 2" "instructions narrow a partial row to its empty pages"
+assert_contains "$md" "read-only" "instructions carry the rules"
 # a long list is summarised: the CSV carries the files
 cp "$t/plan/plan.json" "$t/plan.bak"
 python3 -c "
@@ -64,9 +67,10 @@ import json; p=json.load(open('$t/plan/plan.json')); r=p['rows'][1]
 p['rows'] += [dict(r, target='Core/None%02d.pdf' % i) for i in range(30)]; json.dump(p, open('$t/plan/plan.json','w'))
 s=json.load(open('$t/plan/ocr-survey.json')); [s.__setitem__('Core/None%02d.pdf' % i, s['Core/None.pdf']) for i in range(30)]
 json.dump(s, open('$t/plan/ocr-survey.json','w'))"
-out="$(python3 "$S/ocr_handover.py" --plan "$t/plan" --out "$t/h3.csv")"
-assert_contains "$out" "image-only PDFs" "long list summarised"
-assert_contains "$out" "full list, with each output path, is in the CSV" "summary points at the CSV"
+python3 "$S/ocr_handover.py" --plan "$t/plan" --out "$t/h3.csv" > /dev/null
+md="$(cat "$t/h3.md")"
+assert_contains "$md" "image-only PDFs" "long list summarised"
+assert_contains "$md" "full list, with each output path, is in the CSV" "summary points at the CSV"
 mv "$t/plan.bak" "$t/plan/plan.json"
 
 # resolve_ocr: one output exists, one missing, one handover row unused
@@ -131,6 +135,12 @@ assert_contains "$out" "garble%" "report header"
 case "$out" in *mk/1k*) fail "no markers, no column";; *) pass;; esac
 out="$(PATH="$t/bin:$PATH" python3 "$S/ocr_quality.py" --markers "o,e" "$t/src")"
 assert_contains "$out" "mk/1k" "markers add a column"
+# ocr_quality --words: page 1 sideways junk, page 2 real words -> only page 1 listed
+mkdir -p "$t/lw"; : > "$t/lw/r.pdf"; printf 'ship\ncrew\nstar\nport\n' > "$t/words"
+{ for i in $(seq 60); do printf 'xqzt '; done; printf '\f'; for i in $(seq 15); do printf 'ship crew star port '; done; } > "$t/lw/r.pdf.txt"
+out="$(PATH="$t/bin:$PATH" python3 "$S/ocr_quality.py" --words "$t/words" "$t/lw")"
+assert_contains "$out" "lowpg" "words add a column"
+assert_contains "$out" "1 [1]" "only the junk page is listed"
 
 # ---- fix round 1 ----
 echo '{"ocr": "server"}' > "$t/cfg/grimoire-skills.json"

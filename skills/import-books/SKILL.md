@@ -220,6 +220,12 @@ grimoire-cli books metadata-fetch   --id <anchor> --source-id <source> --paste "
 Write `plan.json` into the run dir, with a small `plan.py` there if it helps. A gap found here is
 an `open_question` on the row, or a targeted return to phase 2, never a silent fetch.
 
+**Read the files before calling a field a gap.** Before the walkthrough lists missing descriptions,
+authors or years, every row missing one has had its first and last pages read (imprint, back cover,
+intro, credits; `references/metadata-ladder.md` rungs 3–5) and its cover rendered for printed codes.
+A blurb printed on the file is copied as printed; with no blurb, a description written from the
+file's intro is marked `authored`. Only what is still empty after that is a gap.
+
 - **Every row has an explicit title**, carrying the code as the filename does (profile
   *Filenames*). Never ship Grimoire's filename-derived title.
 - **Every row conforms to the house style** unless a `naming` decision says why not. Bringing an
@@ -362,10 +368,12 @@ watermark) do not count as text.
   The CSV has `source_path,output_path,reason`, both paths absolute, the output a full file path
   under `<run>/ocr/` (prefixed with the row index, so equal names never collide). Draft it here so
   the walkthrough can show it, but **hand it over only after "proceed"**, and regenerate it if the
-  approved plan changed rows. **Handing over means printing the block** the script writes between
-  `----- OCR handover -----` and `----- end OCR handover -----` in the console, unchanged, inside one
-  code block, so the user can paste it into their OCR agent. Never as a file. Add what the script
-  cannot know (what the pages hold) as a line inside the block. Wait for the outputs, then point the
+  approved plan changed rows. The full instructions (files, rules, checks, what to report) go to
+  `<run>/ocr-handover.md` beside the CSV. **Handing over means printing the short block** the script
+  writes between `----- OCR handover -----` and `----- end OCR handover -----` in the console, inside
+  one code block, so the user can paste it into their OCR agent: a few lines naming both files by
+  absolute path, never the instructions themselves. Add what the script cannot know (what the pages
+  hold, a per-file fix for a redo) to the Markdown file, not the block. Wait for the outputs, then point the
   plan at them and re-check before phase 5:
   ```bash
   python3 scripts/resolve_ocr.py --plan <run> --handover <run>/ocr-handover.csv
@@ -378,7 +386,7 @@ watermark) do not count as text.
   resolves through the handover**, not only the first. Before deleting the OCR work folder,
   check that every output is the source of an uploaded row or was left out with a reason.
 
-Score text quality before upload: `python3 scripts/ocr_quality.py [--markers é,è,à,ç] <dir>…`. See
+Score text quality before upload: `python3 scripts/ocr_quality.py [--markers é,è,à,ç] [--words <list>] <dir>…`. See
 *OCR quality* below for reading it.
 
 ## Phase 4: walkthrough (HARD STOP)
@@ -608,8 +616,12 @@ Never write a dated handover document.
 tokens showing scan damage: a digit inside a letter run, an internal case flip, a junk character;
 digital PDFs sit near 0.2%, 1.4% or more is a fair bar for re-OCR; dice and stat codes are not
 counted) and `frag%` (one-letter tokens). `--markers` lists characters your language uses often
-and adds a per-1000-letters column that catches a wrong-language OCR model. The readings only work
-together:
+and adds a per-1000-letters column that catches a wrong-language OCR model. `--words <list>` (a word
+list for the language, e.g. `/usr/share/dict/words`) adds `lowpg`: pages with 60+ words of four or more
+letters where under 25% are real words. That catches pages OCR'd sideways (rotated tables, maps) and
+pages OCR'd from a garbled render, which `garble%` misses because the junk is made of letters. Run it
+on the whole corpus output, not only on suspects, and read the pages it lists: hex maps and name
+tables score low and are fine. The readings only work together:
 
 | reading | means |
 |---|---|
