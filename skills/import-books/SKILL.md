@@ -174,6 +174,9 @@ Field precedence (a line reference may refine it):
 - **Look at the rendered cover before saying "no code printed".** Stock numbers sit in the cover
   art; render the cover pages (`pdftoppm -f 1 -l 2 -r 100 -png`) and read them. A back-cover
   barcode beats a credits-page ISBN.
+- **Check every ISBN with its check digit** (ISBN-10 or ISBN-13) before it reaches the plan. Text layers and
+  low-resolution renders misread digits (`1-67828` for `1-57828`); a failed check means read it again. The barcode
+  label often carries the stock number too: crop it from a 150 dpi render of the back cover and read it there.
 - **The publisher's own © year beats a shop's listing year and the OGL's year.**
 - **Edition is decided per book**: a "for use with … edition" note first, then the © year, then
   the release date against the core book's; wiki and shop edition labels last.

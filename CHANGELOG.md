@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **`import-books` identifiers:** every ISBN is checked with its check digit before it reaches the plan; the
+  back-cover barcode label is read from a 150 dpi crop, where it often carries the stock number too.
+
 ## 0.1.3 - 2026-11-19
 
 - **`import-books` OCR handover:** the walkthrough's OCR section ends with the handover block, so
