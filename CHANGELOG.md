@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.2 - 2026-11-19
+
+- **Default profile, entry rule:** the lighter build is the entry only when the size gap makes the
+  heavy file slow to read in the browser; with a small gap the better-quality file is the entry.
+- **Default profile, look-alike files:** two non-identical files of one product that share the PDF
+  creation date, page count or image size are compared (`pdfinfo`, `pdfimages -list`) and the
+  findings presented, instead of being settled by the entry rule.
+
 ## 0.1.1 - 2026-11-18
 
 - **`import-books` OCR handover:** `ocr_handover.py` writes the full instructions for the external

@@ -88,8 +88,14 @@ Also for books: `spreads`, `single-page`, `black-and-white`. Maps use `gridded`,
 
 - **The filename still says what the file is**; the variant label lives in the database.
 - **Entry rule (`entry_rule: lighter-build`)**: the lighter build (reduced size, optimized,
-  compressed) is the entry and the full-size file is its variant. Between printings, the newest is
-  the parent. A file with a real text layer beats a scan of it.
+  compressed) is the entry and the full-size file is its variant, when the size gap makes the heavy
+  file slow to read in the browser (say 50 MB against 300 MB). With a small gap, the better-quality
+  file is the entry. Between printings, the newest is the parent. A file with a real text layer
+  beats a scan of it.
+- **Files that look too alike are investigated, not ruled on.** Two files of one product that are not
+  byte twins but share the PDF creation date, page count or image size (`pdfinfo`, `pdfimages
+  -list`: dpi, bits per pixel) may be one scan in two builds. Present the comparison and let the
+  user decide between entry plus variant, or keeping one.
 - Refused by the upload API under `books/` (`refused_book_formats`): `.xlsx`, `.mobi`, `.azw3`,
   `.doc`, `.tif`. Convert first (PDF for office files, PNG for TIFF). RTF is supported as is.
 
