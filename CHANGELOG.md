@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3 - 2026-11-19
+
+- **`import-books` OCR handover:** the walkthrough's OCR section ends with the handover block, so
+  the user can start the OCR while reviewing the plan, instead of waiting for "proceed". Approvals
+  that change which rows need OCR regenerate the block. Returned OCR still needs its own go before
+  phase 5.
+
 ## 0.1.2 - 2026-11-19
 
 - **Default profile, entry rule:** the lighter build is the entry only when the size gap makes the

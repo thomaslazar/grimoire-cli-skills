@@ -366,9 +366,9 @@ watermark) do not count as text.
   python3 scripts/ocr_handover.py --plan <run> --out <run>/ocr-handover.csv
   ```
   The CSV has `source_path,output_path,reason`, both paths absolute, the output a full file path
-  under `<run>/ocr/` (prefixed with the row index, so equal names never collide). Draft it here so
-  the walkthrough can show it, but **hand it over only after "proceed"**, and regenerate it if the
-  approved plan changed rows. The full instructions (files, rules, checks, what to report) go to
+  under `<run>/ocr/` (prefixed with the row index, so equal names never collide). Write it here so
+  **the walkthrough hands it over** (item 9): the user can start the OCR while reviewing the plan.
+  If the approvals change which rows need OCR, regenerate it and hand the new block over. The full instructions (files, rules, checks, what to report) go to
   `<run>/ocr-handover.md` beside the CSV. **Handing over means printing the short block** the script
   writes between `----- OCR handover -----` and `----- end OCR handover -----` in the console, inside
   one code block, so the user can paste it into their OCR agent: a few lines naming both files by
@@ -380,8 +380,8 @@ watermark) do not count as text.
   python3 scripts/check_plan.py --plan <run>
   ```
   `resolve_ocr.py` rewrites each matching row's `source` to the output, reports handover rows no
-  plan row uses, and exits 1 if a listed output is missing. **Returned OCR is not a go-ahead**: the walkthrough's
-  "proceed" covered the handover, not the writes after it. Resolve and score the outputs (*OCR
+  plan row uses, and exits 1 if a listed output is missing. **Returned OCR is not a go-ahead**, and
+  neither is the walkthrough's "proceed" given before the outputs came back. Resolve and score the outputs (*OCR
   quality*), report the result, and wait for an explicit go before phase 5. **Every plan of every run in a batch
   resolves through the handover**, not only the first. Before deleting the OCR work folder,
   check that every output is the source of an uploaded row or was left out with a reason.
@@ -417,13 +417,14 @@ something:
    from the PDF, the catalogue field, the `file` output). Then the authored fields: text you wrote
    rather than a publisher.
 9. **OCR**: rows the survey marked `none` or `partial`, what happens to each, and the time budget.
+   With `ocr: handover`, end this section with the handover block, ready to paste.
 10. **Open questions**, by row.
 11. **What is written where**, in one line: folders created, files uploaded, rows updated, links
     made.
 
 Cheap decisions are summarised, not enumerated. Record the approvals in plan.json (`apply`, any
 `container_kind` change), then re-run `check_plan.py` and `check_shelf.sh`. With `ocr: handover`,
-hand the block over now, resolve it (phase 3), and ask again before phase 5.
+wait for the outputs, resolve them (phase 3), and ask again before phase 5.
 
 ## Phase 5: structure
 
