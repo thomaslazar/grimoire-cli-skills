@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Titles follow the cover:** the title printed on the cover (then the title page) is the rule, not a
+  per-run decision; only a cover that contradicts its title page or looks misprinted is surfaced.
+- **Product codes are looked for but optional:** the cover, barcode label, imprint and source are checked;
+  a row without one is flagged in the walkthrough, never a gap, open question or decision.
 - **`import-books` identifiers:** every ISBN is checked with its check digit before it reaches the plan; the
   back-cover barcode label is read from a 150 dpi crop, where it often carries the stock number too.
 

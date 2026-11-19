@@ -171,9 +171,13 @@ Field precedence (a line reference may refine it):
 - **A printed code beats the corpus's numbering**, and a catalogue beats a filename: a source
   folder's numbering can be shifted against a series that was renumbered since. A disagreement
   decides a filename, so it is a `rename` decision for the walkthrough.
-- **Look at the rendered cover before saying "no code printed".** Stock numbers sit in the cover
-  art; render the cover pages (`pdftoppm -f 1 -l 2 -r 100 -png`) and read them. A back-cover
-  barcode beats a credits-page ISBN.
+- **Look for a product code, but a missing one is only a flag.** Check the cover art, the back-cover
+  barcode label and the imprint (the cover render below shows them) and the source's record. When none
+  turns up, list the row in the walkthrough's flagged rows ("no product code found"); it is not a gap,
+  an open question or a decision. A catalogue code that names files is different: it is part of the
+  title and is researched.
+- **Render the covers** (`pdftoppm -f 1 -l 2 -r 100 -png`) and read them: the title, printed codes and the
+  back-cover blurb live there. A back-cover barcode beats a credits-page ISBN.
 - **Check every ISBN with its check digit** (ISBN-10 or ISBN-13) before it reaches the plan. Text layers and
   low-resolution renders misread digits (`1-67828` for `1-57828`); a failed check means read it again. The barcode
   label often carries the stock number too: crop it from a 150 dpi render of the back cover and read it there.
@@ -231,6 +235,10 @@ file's intro is marked `authored`. Only what is still empty after that is a gap.
 
 - **Every row has an explicit title**, carrying the code as the filename does (profile
   *Filenames*). Never ship Grimoire's filename-derived title.
+- **The title is the one printed on the cover** (then the title page), not the source filename's
+  spelling. This is the rule, not a judgement: no `naming` record and no walkthrough decision when the
+  plan's title differs from the source filename. A cover that disagrees with its own title page, or a
+  title that looks misprinted, is surfaced as a defect.
 - **Every row conforms to the house style** unless a `naming` decision says why not. Bringing an
   existing shelf into line is its own job, not a side effect of an import.
 - Targets follow the profile's *Layout* and *Filenames*: the category folder exactly one level

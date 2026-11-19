@@ -54,7 +54,7 @@ at ten times the file count?
 
     [<Code> - ]<Title>[ - <Qualifier>][ [<SKU>]][ [<Year>]].<ext>
 
-(`filename_pattern` in `profile.json`.)
+(`filename_pattern` in `profile.json`.) `<Title>` is the title printed on the cover, then the title page.
 
 - Bracket slots are optional and always in that order. Nothing else goes in brackets; other tokens
   become tags.
@@ -123,7 +123,7 @@ A closed, lowercase vocabulary. A tag describes either the artifact or what is i
 - Domain tags (character concepts, species and so on) use the system's own vocabulary in the book's
   language. Keep one language per library for them.
 - The publisher's article number goes in the book's `product_code`, in its printed form and upper
-  case. The catalogue code is not a product code.
+  case, when one is found; a missing one is flagged, not a gap. The catalogue code is not a product code.
 
 ## Licence placement
 
