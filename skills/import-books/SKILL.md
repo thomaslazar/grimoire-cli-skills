@@ -102,6 +102,12 @@ Read-only. Record both halves in the run dir.
   can hold book PDFs. Report 0-byte members as a defect of the archive. Extract only into the run
   dir. Handout zips under `books/` index as one inert row, so extract them and shelve the files.
   Plain `unzip` can silently drop CP437 bytes in member names; check the extracted names.
+- **Broken page objects.** A PDF with a damaged cross-reference table can list pages that do not
+  exist: `pdfinfo -f 1 -l 9999 <file>` prints `size: 0 x 0` for them, usually a run at the end, and
+  `qpdf --check` reports the damage. Text extraction reads them as empty pages, so the OCR survey
+  mistakes them for image pages. Report each such file as a defect with its page range and whether
+  content is missing (does the last real page look like a back cover?). The repair is the user's
+  call; OCR alone does not restore these pages.
 - **Byte twins.** Hash the source (`shasum -a 256`) for twins inside it. For twins already on the
   shelf, compare source sizes against `files browse` sizes and hash only the candidates; on the
   server side, `grimoire-cli duplicates scan --accuracy exact --resource-types book`, then
@@ -421,7 +427,8 @@ something:
 5. **A row table**: source → target, disposition, title, ISBN, year, tags, variant.
 6. **Structure conflicts** (`check_shelf.sh` `conflicts`): nothing is re-marked or renamed without a
    yes.
-7. **Surfaced defects**, each with evidence and no correction applied.
+7. **Surfaced defects**, each with evidence and no correction applied. Files with broken page
+   objects are listed here with their page ranges, so the user can repair them before upload.
 8. **Exclusions**: one table row per excluded file (path, size or pages, reason, evidence). Never
    a summary count; an exclusion is the one decision that silently loses content. A byte twin names
    both paths and which is kept; a judgement about what a file *is* quotes the evidence (the line

@@ -8,6 +8,9 @@
   a row without one is flagged in the walkthrough, never a gap, open question or decision.
 - **`import-books` identifiers:** every ISBN is checked with its check digit before it reaches the plan; the
   back-cover barcode label is read from a 150 dpi crop, where it often carries the stock number too.
+- **`import-books` broken page objects:** the survey finds PDFs whose damaged xref lists `0 x 0` pages
+  (`pdfinfo`, `qpdf --check`) and the walkthrough reports them as defects with page ranges; the
+  repair is left to the user, since OCR alone does not restore them.
 
 ## 0.1.3 - 2026-11-19
 
