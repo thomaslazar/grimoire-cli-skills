@@ -202,6 +202,10 @@ Field precedence (a line reference may refine it):
   invisible to a single-source check.
 - **Record a firm negative** ("no listing at the publisher, the shop or the archive") so the next
   pass does not repeat it.
+- **A failed lookup is not a miss.** A timeout, refused connection, 403/429 or bot challenge says
+  nothing about the product: retry it later (or through a browser) before a field is flagged empty.
+  Each flagged field in the walkthrough names the sources searched, and any that could not be
+  reached.
 
 **Through the server's add-ons.** A shop that refuses scripted clients is often reachable through a
 metadata add-on, because it answers from the server. `grimoire-cli addons list` shows what is

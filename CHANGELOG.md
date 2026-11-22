@@ -11,6 +11,8 @@
 - **`import-books` broken page objects:** the survey finds PDFs whose damaged xref lists `0 x 0` pages
   (`pdfinfo`, `qpdf --check`) and the walkthrough reports them as defects with page ranges; the
   repair is left to the user, since OCR alone does not restore them.
+- **`import-books` failed lookups:** a lookup that errored (timeout, refused, 403/429, bot challenge) is retried
+  before a field is flagged; flagged fields name the sources searched and any that could not be reached.
 
 ## 0.1.3 - 2026-11-19
 
