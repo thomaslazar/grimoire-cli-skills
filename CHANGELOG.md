@@ -13,6 +13,8 @@
   repair is left to the user, since OCR alone does not restore them.
 - **`import-books` failed lookups:** a lookup that errored (timeout, refused, 403/429, bot challenge) is retried
   before a field is flagged; flagged fields name the sources searched and any that could not be reached.
+- **`import-books` advert codes:** a stock number printed beside another title (an advert on the back cover
+  or end pages) is not the row's product code; only the book's own cover block or barcode label counts.
 
 ## 0.1.3 - 2026-11-19
 

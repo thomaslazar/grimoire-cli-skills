@@ -182,6 +182,9 @@ Field precedence (a line reference may refine it):
   turns up, list the row in the walkthrough's flagged rows ("no product code found"); it is not a gap,
   an open question or a decision. A catalogue code that names files is different: it is part of the
   title and is researched.
+- **A code on a cover can belong to another product.** Back covers and end pages carry adverts with the
+  advertised product's stock number. Take a printed code only from the book's own cover block or barcode
+  label; a code that a sibling book also prints, or that sits beside another title, is not this row's.
 - **Render the covers** (`pdftoppm -f 1 -l 2 -r 100 -png`) and read them: the title, printed codes and the
   back-cover blurb live there. A back-cover barcode beats a credits-page ISBN.
 - **Check every ISBN with its check digit** (ISBN-10 or ISBN-13) before it reaches the plan. Text layers and
