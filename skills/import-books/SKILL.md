@@ -420,6 +420,14 @@ watermark) do not count as text.
 Score text quality before upload: `python3 scripts/ocr_quality.py [--markers é,è,à,ç] [--words <list>] <dir>…`. See
 *OCR quality* below for reading it.
 
+**A junk text layer is not caught by the survey.** `ocr_survey.py` counts characters, so a scanner's
+garbage layer reads as `full`, and `ocr_handover.py` skips it. Score every scanned file with
+`ocr_quality.py --words <list>` before the walkthrough; a high garble share means the layer is junk.
+With `ocr: handover`, add such a file to the handover CSV by hand (reason: junk text layer, replace with
+`--redo-ocr`), so it is in the walkthrough's handover block (item 9) like the `none` and `partial` rows.
+A per-page non-word check can miss a junk layer too, because a junk page often has few words of four
+or more letters: compare the dictionary share of the whole file before and after.
+
 ## Phase 4: walkthrough (HARD STOP)
 
 Show it in the console. **Do not continue without an explicit "proceed"; showing the table is not

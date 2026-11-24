@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **`import-books` junk text layers:** a scanner's garbage text layer reads as `full` in the OCR survey;
+  every scanned file is scored with `ocr_quality.py` before the walkthrough, and a junk layer joins the
+  handover block for `--redo-ocr`.
+
 - **`import-books` UPC item numbers:** a UPC's item number often repeats the stock number; after its check
   digit passes, it confirms a code read off the cover art.
 
