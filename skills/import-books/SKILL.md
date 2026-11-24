@@ -189,6 +189,9 @@ Field precedence (a line reference may refine it):
   blurb beside the code describes another product, or two books print the same code, neither takes it.
 - **Render the covers** (`pdftoppm -f 1 -l 2 -r 100 -png`) and read them: the title, printed codes and the
   back-cover blurb live there. A back-cover barcode beats a credits-page ISBN.
+- **A `�` in extracted text is a dropped ligature** (`tt`, `ft`, `fi`, `fl`, `th`, `tz`, `fk`, …). Repair the word
+  against a word list and the names seen elsewhere in the run; leave it for the walkthrough when nothing matches.
+  Never write a `�` into a title, author or description.
 - **Check every ISBN with its check digit** (ISBN-10 or ISBN-13) before it reaches the plan. Text layers and
   low-resolution renders misread digits (`1-67828` for `1-57828`); a failed check means read it again. The barcode
   label often carries the stock number too: crop it from a 150 dpi render of the back cover and read it there.

@@ -15,6 +15,8 @@
   before a field is flagged; flagged fields name the sources searched and any that could not be reached.
 - **`import-books` advert codes:** a stock number printed beside another title (an advert on the back cover
   or end pages) is not the row's product code; only the book's own cover block or barcode label counts.
+- **`import-books` dropped ligatures:** a `�` in extracted text is repaired against a word list and the run's
+  names before it reaches a title, author or description.
 - **`import-books` template leftovers:** a cover spread that kept a sibling's back cover (blurb and code of
   another product) gives no code; a code printed by two books belongs to neither.
 
