@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **`import-books` UPC item numbers:** a UPC's item number often repeats the stock number; after its check
+  digit passes, it confirms a code read off the cover art.
+
 - **Titles follow the cover:** the title printed on the cover (then the title page) is the rule, not a
   per-run decision; only a cover that contradicts its title page or looks misprinted is surfaced.
 - **Product codes are looked for but optional:** the cover, barcode label, imprint and source are checked;
