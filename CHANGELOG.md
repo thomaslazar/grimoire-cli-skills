@@ -2,9 +2,13 @@
 
 ## Unreleased
 
-- **`import-books` junk text layers:** a scanner's garbage text layer reads as `full` in the OCR survey;
-  every scanned file is scored with `ocr_quality.py` before the walkthrough, and a junk layer joins the
-  handover block for `--redo-ocr`.
+- **`import-books` junk text layers:** `ocr_survey.py` marks a text layer `junk` when its garble% is at
+  least 5 and under 25% of its longer words are in the word list (`--words`); a junk row wins over
+  `partial`, and `ocr_handover.py` hands it over for `--redo-ocr`. High-garble rows with real words (maps,
+  stat-heavy books, degraded scanner layers) are listed under `check` for the walkthrough.
+- **`import-books` upload waits for OCR:** with `ocr: handover`, `upload.py` refuses without
+  `ocr-survey.json`, or while a `none`, `partial` or `junk` row has not been resolved to its OCR output;
+  `--no-ocr TARGET` lets a row the user named go up without it.
 
 - **`import-books` UPC item numbers:** a UPC's item number often repeats the stock number; after its check
   digit passes, it confirms a code read off the cover art.

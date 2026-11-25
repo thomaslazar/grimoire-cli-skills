@@ -4,6 +4,7 @@ here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(cd "$here/../../../.." && pwd)"
 . "$repo/tests/lib/assert.sh"
 t="$(mktemp -d)"; trap 'rm -rf "$t"' EXIT
+cd "$t"  # no grimoire-skills.json above: ocr mode server
 export FAKE_CLI_DIR="$t/fake"
 cli="$repo/tests/lib/fake_cli.sh"
 mkdir -p "$FAKE_CLI_DIR/responses" "$FAKE_CLI_DIR/exit"
@@ -38,6 +39,36 @@ echo '{"entries": [{"name": "A.pdf", "size": 99}, {"name": "B.pdf", "size": 5}]}
 out="$(python3 "$here/../upload.py" --plan "$t" --cli "$cli" 2>&1)"; rc=$?
 assert_eq "$rc" "1" "a wrong size on the server exits 1"
 assert_contains "$out" "uploaded 1, skipped 0, failed 1" "wrong-size 409 is a failure"
+
+# ocr: handover -> upload refuses rows whose OCR is not resolved
+h="$t/ho"; mkdir -p "$h/run/ocr"; echo '{"ocr": "handover"}' > "$h/grimoire-skills.json"
+printf 'xyz' > "$h/scan.pdf"; printf 'xyz' > "$h/run/ocr/000-scan.pdf"
+cat > "$h/run/plan.json" <<JSON
+{"system_path": "books/Starfall RPG/1 EN", "rows": [
+ {"source": "$h/scan.pdf", "target": "Core/Scan.pdf", "disposition": "new"},
+ {"source": "$t/a.pdf", "target": "Core/A.pdf", "disposition": "new"}]}
+JSON
+: > "$FAKE_CLI_DIR/calls.log"
+out="$(cd "$h" && python3 "$here/../upload.py" --plan "$h/run" --cli "$cli" 2>&1)"; rc=$?
+assert_eq "$rc" "2" "handover mode without a survey refuses"
+assert_contains "$out" "ocr-survey.json is missing" "names the missing survey"
+echo '{"Core/Scan.pdf": {"text": "junk"}, "Core/A.pdf": {"text": "full"}}' > "$h/run/ocr-survey.json"
+out="$(cd "$h" && python3 "$here/../upload.py" --plan "$h/run" --cli "$cli" 2>&1)"; rc=$?
+assert_eq "$rc" "2" "an unresolved junk row refuses"
+assert_contains "$out" "Core/Scan.pdf" "names the row"
+assert_eq "$(grep -c '^files upload' "$FAKE_CLI_DIR/calls.log")" "0" "nothing uploaded on refusal"
+echo '{"entries": [{"name": "Scan.pdf", "size": 3}, {"name": "A.pdf", "size": 3}]}' \
+  > "$FAKE_CLI_DIR/responses/files-browse__books_Starfall_RPG_1_EN_Core.json"
+rm -f "$FAKE_CLI_DIR"/exit/files-upload.*
+out="$(cd "$h" && python3 "$here/../upload.py" --plan "$h/run" --cli "$cli" --no-ocr Core/Scan.pdf 2>&1)"; rc=$?
+assert_eq "$rc" "0" "--no-ocr lets the named row go up"
+rm -f "$h/run"/receipts-*; rm -rf "$h/run/stage"
+python3 - "$h/run/plan.json" "$h/run/ocr/000-scan.pdf" <<'PY'
+import json, sys
+p = json.load(open(sys.argv[1])); p["rows"][0]["source"] = sys.argv[2]; json.dump(p, open(sys.argv[1], "w"))
+PY
+out="$(cd "$h" && python3 "$here/../upload.py" --plan "$h/run" --cli "$cli" 2>&1)"; rc=$?
+assert_eq "$rc" "0" "a row resolved to its OCR output goes up"
 
 # make_folders: creates the missing levels, parent first, with container kinds
 rm -rf "$FAKE_CLI_DIR"; mkdir -p "$FAKE_CLI_DIR/responses" "$FAKE_CLI_DIR/exit"

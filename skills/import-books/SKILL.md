@@ -386,9 +386,13 @@ python3 scripts/ocr_survey.py --plan <run>
 ```
 
 It writes `ocr-survey.json`: per PDF row, pages, characters per page, empty pages and `text` =
-`full`, `partial` (at least 10% of pages empty, `--partial-ratio`), `none` (image-only) or `error`
-(unreadable, reported and skipped). Lines matching `--drop` (default `^\s*Order #`, a purchase
-watermark) do not count as text.
+`full`, `partial` (at least 10% of pages empty, `--partial-ratio`), `junk` (garble% at least 5,
+`--junk-garble`, and under 25% of the longer words in `--words`, default `/usr/share/dict/words`: an old
+scanner OCR to replace; wins over `partial`), `none` (image-only) or `error` (unreadable, reported and
+skipped). Pass the word list of the books' language. The summary's `check` lists rows with a high
+garble% that are not junk: maps and stat-heavy books land there, and so does a degraded but partly
+readable scanner layer. The walkthrough shows them; the user decides which go to OCR. Lines matching
+`--drop` (default `^\s*Order #`, a purchase watermark) do not count as text.
 
 - **`ocr: server`**: nothing to do before upload; phase 7 queues the `none` rows. Partial rows
   are reported in the walkthrough; the server only OCRs image-only books.
@@ -420,13 +424,9 @@ watermark) do not count as text.
 Score text quality before upload: `python3 scripts/ocr_quality.py [--markers é,è,à,ç] [--words <list>] <dir>…`. See
 *OCR quality* below for reading it.
 
-**A junk text layer is not caught by the survey.** `ocr_survey.py` counts characters, so a scanner's
-garbage layer reads as `full`, and `ocr_handover.py` skips it. Score every scanned file with
-`ocr_quality.py --words <list>` before the walkthrough; a high garble share means the layer is junk.
-With `ocr: handover`, add such a file to the handover CSV by hand (reason: junk text layer, replace with
-`--redo-ocr`), so it is in the walkthrough's handover block (item 9) like the `none` and `partial` rows.
-A per-page non-word check can miss a junk layer too, because a junk page often has few words of four
-or more letters: compare the dictionary share of the whole file before and after.
+**Junk text layers.** The survey's `junk` rows go into the handover with a `--redo-ocr` reason, like the
+`none` and `partial` rows. A per-page non-word check can miss a junk layer, because a junk page often has
+few words of four or more letters: compare the dictionary share of the whole file before and after.
 
 ## Phase 4: walkthrough (HARD STOP)
 
@@ -456,7 +456,8 @@ something:
    both paths and which is kept; a judgement about what a file *is* quotes the evidence (the line
    from the PDF, the catalogue field, the `file` output). Then the authored fields: text you wrote
    rather than a publisher.
-9. **OCR**: rows the survey marked `none` or `partial`, what happens to each, and the time budget.
+9. **OCR**: rows the survey marked `none`, `partial` or `junk`, and the rows in its `check` list, what
+   happens to each, and the time budget.
    With `ocr: handover`, end this section with the handover block, ready to paste.
 10. **Open questions**, by row.
 11. **What is written where**, in one line: folders created, files uploaded, rows updated, links
@@ -500,6 +501,9 @@ is the target's. A row succeeds when `files browse` lists the name at the source
 (exit 2, already there) counts as `skipped` when the server holds the plan size, `failed`
 otherwise. Receipts: `receipts-upload.ndjson`; a re-run skips rows already ok. Prints `uploaded N,
 skipped N, failed N`; exit 1 on any failure. Count `uploaded + skipped` against the new rows.
+With `ocr: handover` it refuses (exit 2, nothing uploaded) without `ocr-survey.json`, or while a `none`,
+`partial` or `junk` row still has its original source instead of its output under `<run>/ocr/`. Only when
+the user says a row goes up without its OCR, name it with `--no-ocr <target>` (repeatable).
 
 - Uploads stream with no timeout; the server refuses a file over 8 GiB (413).
 - `500 The disk is full` means the server's library volume is full.

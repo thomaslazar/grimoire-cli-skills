@@ -12,11 +12,16 @@ S="$here/.."
 page() { python3 -c "print('word ' * 60)"; }
 
 # full: 3 text pages; none: no text; partial: 3 of 4 pages text, 1 empty; watermark-only: none
-for n in full none partial wm; do : > "$t/src/$n.pdf"; done
+for n in full none partial wm junk map; do : > "$t/src/$n.pdf"; done
 { page; printf '\f'; page; printf '\f'; page; printf '\f'; } > "$t/src/full.pdf.txt"
 : > "$t/src/none.pdf.txt"
 { page; printf '\f'; printf '\f'; page; printf '\f'; page; printf '\f'; } > "$t/src/partial.pdf.txt"
 { for i in 1 2; do echo "Order #123 for someone $(page)"; printf '\f'; done; } > "$t/src/wm.pdf.txt"
+# junk: an old scanner layer (digits inside letter runs), one page empty -> junk wins over partial
+{ python3 -c "print('thQf w0rd ' * 40)"; printf '\f\f'; } > "$t/src/junk.pdf.txt"
+# map: as many codes (A788899C) as real words -> high garble, but the words are real -> full
+python3 -c "print('Sector A788899C word ' * 40)" > "$t/src/map.pdf.txt"
+printf 'word\nsector\n' > "$t/words"
 echo notpdf > "$t/src/readme.txt"
 cat > "$t/plan/plan.json" <<JSON
 {"system_path": "books/Starfall RPG/1 EN", "source_root": "$t/src", "rows": [
@@ -25,16 +30,22 @@ cat > "$t/plan/plan.json" <<JSON
  {"source": "partial.pdf", "target": "Core/Partial.pdf", "disposition": "new", "book_id": "id-part"},
  {"source": "wm.pdf", "target": "Core/Wm.pdf", "disposition": "new", "book_id": "id-wm"},
  {"source": "readme.txt", "target": "Core/Readme.txt", "disposition": "new"},
- {"source": "full.pdf", "target": "Core/Skip.pdf", "disposition": "skip"}]}
+ {"source": "full.pdf", "target": "Core/Skip.pdf", "disposition": "skip"},
+ {"source": "junk.pdf", "target": "Core/Junk.pdf", "disposition": "new", "book_id": "id-junk"},
+ {"source": "map.pdf", "target": "Maps/Map.pdf", "disposition": "new", "book_id": "id-map"}]}
 JSON
 
 # survey
-PATH="$t/bin:$PATH" python3 "$S/ocr_survey.py" --plan "$t/plan" > /dev/null; rc=$?
+out="$(PATH="$t/bin:$PATH" python3 "$S/ocr_survey.py" --plan "$t/plan" --words "$t/nowords" 2>&1)"
+assert_contains "$out" "junk_check" "no word list: the junk check says it was skipped"
+assert_eq "$(python3 -c "import json; print(json.load(open('$t/plan/ocr-survey.json'))['Core/Junk.pdf']['text'])")" "partial" "no word list: no junk verdict"
+out="$(PATH="$t/bin:$PATH" python3 "$S/ocr_survey.py" --plan "$t/plan" --words "$t/words")"; rc=$?
+assert_contains "$out" '"check": ["Maps/Map.pdf"]' "high garble with real words is listed for the walkthrough, not classified"
 assert_eq "$rc" "0" "survey runs"
 got="$(python3 -c "
 import json; d=json.load(open('$t/plan/ocr-survey.json'))
-print(sorted((k.split('/')[1], v['text']) for k, v in d.items()), d['Core/Partial.pdf']['empty_pages'])")"
-assert_eq "$got" "[('Full.pdf', 'full'), ('None.pdf', 'none'), ('Partial.pdf', 'partial'), ('Wm.pdf', 'none')] [2]" "survey classes, watermark dropped, non-pdf and skip ignored"
+print(sorted((k.split('/')[1], v['text']) for k, v in d.items()), d['Core/Partial.pdf']['empty_pages'], d['Maps/Map.pdf']['garble'] >= 5)")"
+assert_eq "$got" "[('Full.pdf', 'full'), ('Junk.pdf', 'junk'), ('Map.pdf', 'full'), ('None.pdf', 'none'), ('Partial.pdf', 'partial'), ('Wm.pdf', 'none')] [2] True" "survey classes: junk layer, map codes with real words stay full, watermark dropped, non-pdf and skip ignored"
 mkdir "$t/empty"; py="$(command -v python3)"
 out="$(PATH="$t/empty" "$py" "$S/ocr_survey.py" --plan "$t/plan" 2>&1)"; rc=$?
 assert_eq "$rc" "2" "missing pdftotext exits 2"; assert_contains "$out" "install" "install hint"
@@ -48,7 +59,8 @@ echo '{"ocr": "handover"}' > "$t/cfg/grimoire-skills.json"
 python3 "$S/ocr_handover.py" --plan "$t/plan" --out "$t/h.csv" > /dev/null; rc=$?
 assert_eq "$rc" "0" "handover writes"
 assert_eq "$(head -1 "$t/h.csv")" "source_path,output_path,reason" "csv header"
-assert_eq "$(wc -l < "$t/h.csv" | tr -d ' ')" "4" "none+partial+wm rows only"
+assert_eq "$(wc -l < "$t/h.csv" | tr -d ' ')" "5" "none+partial+wm+junk rows only"
+assert_contains "$(cat "$t/h.csv")" "junk text layer (garble" "junk reason asks for a redo"
 assert_contains "$(cat "$t/h.csv")" "$t/src/none.pdf,$t/plan/ocr/001-none.pdf," "absolute source and full output file path"
 assert_contains "$(cat "$t/h.csv")" "pages 2 have no text" "partial reason names pages"
 out="$(python3 "$S/ocr_handover.py" --plan "$t/plan" --out "$t/h.csv")"

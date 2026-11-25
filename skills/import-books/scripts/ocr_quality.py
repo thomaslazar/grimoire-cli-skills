@@ -26,26 +26,49 @@ TOK = re.compile(r"[^\s]{2,}")
 STAT = re.compile(r"^(?:\d*[dDwW]\d+(?:[+-]\d+)?|[A-Z]{1,3}[a-z]?\d{1,3}|[A-Z]{1,3}\d*[dDwW]\d+)$")
 
 
+def long_words(t):
+    return [w.lower() for w in re.findall(L + "{4,}", t)]
+
+
+def dict_share(ws, words):
+    """Share of words (lower case) found in the word list, plural s allowed."""
+    return sum(w in words or w.rstrip("s") in words for w in ws) / (len(ws) or 1)
+
+
 def low_pages(t, words):
     bad = []
     for i, pg in enumerate(t.split("\f"), 1):
-        ws = [w.lower() for w in re.findall(L + "{4,}", pg)]
-        if len(ws) >= 60 and sum(w in words or w.rstrip("s") in words for w in ws) / len(ws) < 0.25:
+        ws = long_words(pg)
+        if len(ws) >= 60 and dict_share(ws, words) < 0.25:
             bad.append(i)
     return bad
 
 
+def counts(t):
+    """Word count and the damage counts that make up garble%."""
+    words = [w for w in TOK.findall(t) if re.search(L, w)]
+    return dict(
+        words=words,
+        digit=sum(1 for w in words if re.search(L + r"\d|\d" + L, w) and not STAT.match(w)),
+        under=sum("_" in w for w in words),
+        flip=sum(1 for w in words if re.search(r"[^\W\dA-Z_][A-Z]", w) and re.search(r"[a-z][A-Z]", w)),
+        junk=sum(1 for w in words if re.search(r"[�|~^`<>{}\\]", w)))
+
+
+def garble(t):
+    """garble% of a text: share of word tokens showing OCR damage."""
+    c = counts(t)
+    return round((c["digit"] + c["under"] + c["flip"] + c["junk"]) / (len(c["words"]) or 1) * 100, 2)
+
+
 def score(path, markers=(), wordlist=None):
     t = subprocess.run(["pdftotext", path, "-"], capture_output=True, text=True, errors="replace").stdout
-    words = [w for w in TOK.findall(t) if re.search(L, w)]
+    c = counts(t)
+    words, digit, under, flip, junk = c["words"], c["digit"], c["under"], c["flip"], c["junk"]
     n = len(words) or 1
-    digit = sum(1 for w in words if re.search(L + r"\d|\d" + L, w) and not STAT.match(w))
-    under = sum("_" in w for w in words)
-    flip = sum(1 for w in words if re.search(r"[^\W\dA-Z_][A-Z]", w) and re.search(r"[a-z][A-Z]", w))
-    junk = sum(1 for w in words if re.search(r"[�|~^`<>{}\\]", w))
     frag = sum(1 for w in words if len(re.sub(r"[\W\d_]", "", w)) == 1)
     letters = max(sum(c.isalpha() for c in t), 1)
-    r = dict(words=n, garble=round((digit + under + flip + junk) / n * 100, 2), digit=round(digit / n * 100, 2),
+    r = dict(words=n, garble=garble(t), digit=round(digit / n * 100, 2),
              underscore=round(under / n * 100, 2), caseflip=round(flip / n * 100, 2), junk=round(junk / n * 100, 2),
              frag=round(frag / n * 100, 1))
     if markers:

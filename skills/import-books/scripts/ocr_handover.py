@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write the handover CSV for an external OCR tool: rows whose survey says none or partial.
+"""Write the handover CSV for an external OCR tool: rows whose survey says none, partial or junk.
 
 usage: ocr_handover.py --plan DIR|plan.json --out CSV
 
@@ -24,14 +24,18 @@ def instructions(csv_path, ocr_dir, items):
     files = []
     for k, (src, out, s, lang) in enumerate(items, 1):
         what = ("image-only, OCR every page" if s["text"] == "none" else
+                "junk text layer (garble %s%%): replace it on every page, ocrmypdf --redo-ocr" % s.get("garble") if s["text"] == "junk" else
                 "OCR only pages %s; keep the existing text layer on the others" % ",".join(map(str, s["empty_pages"])))
         size = os.path.getsize(src) / 1048576 if os.path.exists(src) else 0
         files.append(f"{k}. {src}  ({s.get('pages', '?')} pages, {size:.0f} MB, language: {lang}; {what})\n   -> {out}")
     if len(files) > LIST_MAX:  # a corpus-wide pass: the CSV carries the list, the block the totals
         none = [it for it in items if it[2]["text"] == "none"]
-        part = [it for it in items if it[2]["text"] != "none"]
+        junk = [it for it in items if it[2]["text"] == "junk"]
+        part = [it for it in items if it[2]["text"] == "partial"]
         langs = sorted({it[3] for it in items})
         files = [f"{len(none)} image-only PDFs ({sum(it[2].get('pages', 0) for it in none)} pages): OCR every page.",
+                 f"{len(junk)} PDFs with a junk text layer ({sum(it[2].get('pages', 0) for it in junk)} pages):"
+                 " replace the layer on every page (ocrmypdf --redo-ocr).",
                  f"{len(part)} PDFs with some empty pages ({sum(len(it[2]['empty_pages']) for it in part)} pages):"
                  " OCR only the pages the CSV's reason column names; keep the existing text layer on the others.",
                  f"Languages: {', '.join(langs)}. The full list, with each output path, is in the CSV."]
@@ -109,6 +113,8 @@ if __name__ == "__main__":
                 continue
             src = os.path.abspath(os.path.join(root, r["source"]))
             reason = ("image-only: OCR every page and add a text layer" if s["text"] == "none" else
+                      "junk text layer (garble %s%%): replace it on every page with ocrmypdf --redo-ocr" % s.get("garble")
+                      if s["text"] == "junk" else
                       "pages %s have no text layer: OCR them and keep the existing text elsewhere" % ",".join(map(str, s["empty_pages"])))
             out = os.path.join(plandir, "ocr", f"{i:03d}-{os.path.basename(src)}")
             w.writerow([src, out, reason])
